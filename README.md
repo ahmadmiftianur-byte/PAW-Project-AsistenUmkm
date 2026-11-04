@@ -41,5 +41,4 @@ Data produk contoh disimpan pada `models/produkModel.js`. Halaman EJS menerima d
 - `public/`: file CSS statis.
 - `app.js`: entry point Express.
 
-## GitHub
-Gunakan nama repository sesuai ketentuan kelas: `PAW-Project-SahabatUMKM`. Sesuaikan repository kelompok/individu dengan kelas. Contoh commit: `Week7(feat): add status and product API endpoints`.
+
