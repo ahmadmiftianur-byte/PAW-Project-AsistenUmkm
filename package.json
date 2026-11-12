@@ -3,9 +3,22 @@
   "version": "1.0.0",
   "description": "Fondasi aplikasi SahabatUMKM untuk praktikum PPAW Week 7",
   "main": "app.js",
-  "scripts": {"start": "node app.js", "dev": "node --watch app.js"},
-  "keywords": ["umkm", "express", "ejs", "mvc"],
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "keywords": [
+    "umkm",
+    "express",
+    "ejs",
+    "mvc"
+  ],
   "license": "ISC",
   "type": "commonjs",
-  "dependencies": {"ejs": "^3.1.10", "express": "^5.1.0"}
+  "dependencies": {
+    "dotenv": "^18.0.10",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "pg": "^8.23.1"
+  }
 }

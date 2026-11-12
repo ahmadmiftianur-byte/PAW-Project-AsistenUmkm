@@ -1,9 +1,13 @@
-// Logger mencatat request setelah response selesai dikirim.
-module.exports = function logger(req, res, next) {
-  const waktuMulai = new Date();
+function logger(req, res, next) {
+  const startedAt = Date.now();
+  const timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+
   res.on('finish', () => {
-    const timestamp = waktuMulai.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-    console.log(`[${timestamp}] ${req.method} ${req.originalUrl} - ${res.statusCode}`);
+    const duration = Date.now() - startedAt;
+    console.log(`[${timestamp}] ${req.method} ${req.originalUrl} | Status: ${res.statusCode} | ${duration}ms`);
   });
+
   next();
-};
+}
+
+module.exports = logger;

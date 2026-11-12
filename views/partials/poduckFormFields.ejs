@@ -1,0 +1,5 @@
+<% const p = typeof prefix === 'undefined' ? '' : prefix; %>
+<div class="mb-3"><label class="form-label">Nama produk</label><input class="form-control" name="<%= p %>nama" maxlength="150" required></div>
+<div class="mb-3"><label class="form-label">Kategori</label><select class="form-select" name="<%= p %>kategori" required><option value="">Pilih kategori</option><option>Makanan</option><option>Minuman</option><option>Camilan</option><option>Lainnya</option></select></div>
+<div class="row"><div class="col-md-6 mb-3"><label class="form-label">Harga (Rp)</label><input class="form-control" type="number" name="<%= p %>harga" min="1" step="0.01" required></div><div class="col-md-6 mb-3"><label class="form-label">Stok</label><input class="form-control" type="number" name="<%= p %>stok" min="0" step="1" value="0" required></div></div>
+<div class="mb-2"><label class="form-label">Deskripsi</label><textarea class="form-control" name="<%= p %>deskripsi" rows="3"></textarea></div>
