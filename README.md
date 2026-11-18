@@ -189,8 +189,17 @@ pengujian:
 get:
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2dee3ea9-8dbe-4ef1-a21b-becb7bbab447" />
 
+
+
+
+
 post:
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/45c331da-6111-4853-98d1-c7a2ffa8a4c1" />
 
 delete:
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/fd8550a8-4ea7-4c32-bc1b-1f7f4263fc86" />
+
+# SahabatUMKM — PPAW Week 9
+
+PENAMBAHAN AI PADA CHAT BOT:
+<img width="1095" height="537" alt="image" src="https://github.com/user-attachments/assets/02c73426-5b81-4b0f-ab42-1a10c4ae890b" />
