@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= appName %> | Pengaturan Usaha</title>
+  <meta name="description" content="Kelola informasi usaha dan konfigurasi AI Assistant">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <main class="main-content">
+    <div class="container">
+      <div class="settings-layout">
+
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">⚙️ Pengaturan Usaha</h1>
+            <p class="page-subtitle">Kelola informasi usaha dan konfigurasi AI Assistant</p>
+          </div>
+          <a href="/" class="btn-ghost">← Dashboard</a>
+        </div>
+
+        <% if (typeof message !== 'undefined' && message) { %>
+        <div class="alert alert--<%= messageType === 'success' ? 'success' : 'error' %>">
+          <span><%= messageType === 'success' ? '✅' : '❌' %></span>
+          <span><%= message %></span>
+        </div>
+        <% } %>
+        <div id="alertContainer"></div>
+
+        <!-- Card 1: Data Usaha -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div class="settings-card-icon">🏪</div>
+            <div>
+              <div class="settings-card-title">Informasi Usaha</div>
+              <div class="settings-card-desc">Data ini digunakan sebagai konteks oleh AI Assistant (F-02)</div>
+            </div>
+          </div>
+
+          <form id="usahaForm">
+            <div class="form-group">
+              <label class="form-label" for="inp-nama">Nama Usaha <span style="color:var(--clr-error)">*</span></label>
+              <input class="form-input" type="text" id="inp-nama" name="nama"
+                     value="<%= usaha ? usaha.nama : '' %>"
+                     placeholder="Contoh: Warung Makan Asep" required maxlength="150">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inp-desc">Deskripsi Usaha</label>
+              <textarea class="form-textarea" id="inp-desc" name="deskripsi"
+                        placeholder="Ceritakan singkat tentang usaha Anda…"><%= usaha ? (usaha.deskripsi || '') : '' %></textarea>
+              <div class="form-hint">AI akan menggunakan deskripsi ini untuk memperkenalkan usaha kepada pelanggan.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inp-jam">Jam Operasional</label>
+              <input class="form-input" type="text" id="inp-jam" name="jam_buka"
+                     value="<%= usaha ? (usaha.jam_buka || '') : '' %>"
+                     placeholder="Contoh: Senin–Sabtu 07.00–21.00 WIB">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inp-lokasi">Lokasi / Alamat</label>
+              <textarea class="form-textarea" id="inp-lokasi" name="lokasi" rows="2"
+                        placeholder="Contoh: Jl. Sukajadi No. 12, Bandung"><%= usaha ? (usaha.lokasi || '') : '' %></textarea>
+            </div>
+
+            <!-- Gaya Bahasa Bot (F-03) -->
+            <div class="form-group">
+              <label class="form-label">Gaya Bahasa Bot</label>
+              <div class="form-hint" style="margin-bottom:.75rem;">Pilih cara AI Assistant menyapa dan menjawab pelanggan</div>
+              <div class="gaya-grid">
+                <div class="gaya-card">
+                  <input type="radio" name="gaya_bahasa" id="gaya-ramah" value="ramah"
+                         <%= (!usaha || usaha.gaya_bahasa === 'ramah') ? 'checked' : '' %>>
+                  <label class="gaya-card-label" for="gaya-ramah">
+                    <span class="gaya-emoji">😊</span>
+                    <span class="gaya-name">Ramah</span>
+                    <span class="gaya-desc">Hangat & bersahabat</span>
+                  </label>
+                </div>
+                <div class="gaya-card">
+                  <input type="radio" name="gaya_bahasa" id="gaya-santai" value="santai"
+                         <%= (usaha && usaha.gaya_bahasa === 'santai') ? 'checked' : '' %>>
+                  <label class="gaya-card-label" for="gaya-santai">
+                    <span class="gaya-emoji">😎</span>
+                    <span class="gaya-name">Santai</span>
+                    <span class="gaya-desc">Kasual & gaul</span>
+                  </label>
+                </div>
+                <div class="gaya-card">
+                  <input type="radio" name="gaya_bahasa" id="gaya-formal" value="formal"
+                         <%= (usaha && usaha.gaya_bahasa === 'formal') ? 'checked' : '' %>>
+                  <label class="gaya-card-label" for="gaya-formal">
+                    <span class="gaya-emoji">👔</span>
+                    <span class="gaya-name">Formal</span>
+                    <span class="gaya-desc">Profesional & sopan</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Preview Bot -->
+              <div class="bot-preview">
+                <div class="bot-preview-label">Preview Balasan Bot</div>
+                <div class="bot-preview-row">
+                  <div class="bot-preview-av">🤖</div>
+                  <div class="bot-preview-text" id="previewText">
+                    Halo! Selamat datang di <%= usaha ? usaha.nama : 'usaha kami' %>. Ada yang bisa saya bantu hari ini? 😊
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary btn-block" id="saveBtn">
+              💾 Simpan Pengaturan
+            </button>
+          </form>
+        </div>
+
+        <!-- Card 2: Info AI -->
+        <div class="settings-card" style="border-left:3px solid var(--clr-primary);">
+          <div class="settings-card-header">
+            <div class="settings-card-icon">🤖</div>
+            <div>
+              <div class="settings-card-title">Informasi AI Assistant</div>
+              <div class="settings-card-desc">Konfigurasi teknis Gemini AI</div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+            <div><div class="stat-label">Model</div><div style="font-weight:700; color:var(--clr-primary); margin-top:.2rem;">Google Gemini</div></div>
+            <div><div class="stat-label">Versi</div><div style="font-weight:700; margin-top:.2rem;">gemini-2.0-flash</div></div>
+            <div><div class="stat-label">Bahasa Utama</div><div style="font-weight:700; margin-top:.2rem;">Bahasa Indonesia</div></div>
+            <div><div class="stat-label">Batas Pesan</div><div style="font-weight:700; margin-top:.2rem;">500 karakter</div></div>
+          </div>
+          <div style="background:var(--clr-primary-light); border-radius:var(--radius-lg); padding:.875rem; font-size:.8rem; color:var(--clr-primary-dark);">
+            💡 <strong>Tips:</strong> AI hanya menjawab seputar usaha Anda berdasarkan data di atas. Pastikan data selalu diperbarui agar jawaban akurat.
+          </div>
+        </div>
+
+        <!-- Card 3: Link Reservasi -->
+        <div class="settings-card" style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+          <div>
+            <div class="settings-card-title">📅 Kelola Reservasi</div>
+            <div class="settings-card-desc">Lihat dan konfirmasi semua pemesanan dari pelanggan</div>
+          </div>
+          <a href="/reservasi" class="btn-primary">Lihat Reservasi →</a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    // Preview gaya bahasa
+    const namaUsahaInput = document.getElementById('inp-nama');
+    const previewText = document.getElementById('previewText');
+    const previews = {
+      ramah: nama => `Halo! Selamat datang di ${nama || 'usaha kami'}. Ada yang bisa saya bantu hari ini? 😊`,
+      santai: () => 'Hei, halo! 👋 Mau tanya-tanya apa nih? Yuk, langsung aja!',
+      formal: () => 'Selamat datang. Dengan senang hati kami siap melayani Anda. Silakan sampaikan pertanyaan Anda.',
+    };
+
+    function updatePreview() {
+      const style = document.querySelector('input[name="gaya_bahasa"]:checked')?.value || 'ramah';
+      previewText.textContent = (previews[style] || previews.ramah)(namaUsahaInput.value);
+    }
+
+    document.querySelectorAll('input[name="gaya_bahasa"]').forEach(r => r.addEventListener('change', updatePreview));
+    namaUsahaInput.addEventListener('input', updatePreview);
+
+    // Form submit via Fetch
+    document.getElementById('usahaForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Menyimpan…';
+
+      const payload = {
+        nama:        document.getElementById('inp-nama').value,
+        deskripsi:   document.getElementById('inp-desc').value,
+        jam_buka:    document.getElementById('inp-jam').value,
+        lokasi:      document.getElementById('inp-lokasi').value,
+        gaya_bahasa: document.querySelector('input[name="gaya_bahasa"]:checked')?.value || 'ramah',
+      };
+
+      try {
+        const res  = await fetch('/api/usaha', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        const box  = document.getElementById('alertContainer');
+        box.innerHTML = data.success
+          ? `<div class="alert alert--success">✅ ${data.message}</div>`
+          : `<div class="alert alert--error">❌ ${data.message}</div>`;
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setTimeout(() => box.innerHTML = '', 4000);
+      } catch {
+        document.getElementById('alertContainer').innerHTML = `<div class="alert alert--error">❌ Gagal menyimpan. Periksa koneksi Anda.</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Simpan Pengaturan';
+      }
+    });
+  </script>
+</body>
+</html>

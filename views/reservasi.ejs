@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= appName %> | Reservasi</title>
+  <meta name="description" content="Daftar reservasi dan pemesanan slot layanan">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <% const safeReservasiList = Array.isArray(reservasiList) ? reservasiList : []; %>
+
+  <main class="main-content">
+    <div class="container">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">📅 Daftar Reservasi</h1>
+          <p class="page-subtitle">Kelola pemesanan slot layanan dari pelanggan (F-06, F-07)</p>
+        </div>
+        <button class="btn-primary" id="btnTambahReservasi">+ Tambah Reservasi</button>
+      </div>
+
+      <% if (typeof message !== 'undefined' && message) { %>
+      <div class="alert alert--<%= messageType === 'success' ? 'success' : 'error' %>">
+        <span><%= messageType === 'success' ? '✅' : '❌' %></span>
+        <span><%= message %></span>
+      </div>
+      <% } %>
+      <div id="alertContainer"></div>
+
+      <!-- Filter Bar -->
+      <div class="table-card">
+        <div class="table-filter-bar">
+          <span class="filter-label">🔍 Filter:</span>
+          <input class="filter-input" type="date" id="filterDate" title="Filter berdasarkan tanggal">
+          <button class="btn-ghost btn-sm" id="btnResetFilter">Reset</button>
+          <span style="margin-left:auto; font-size:.78rem; color:var(--clr-text-muted);">
+            Total: <strong id="totalCount"><%= safeReservasiList.length %></strong> reservasi
+          </span>
+        </div>
+
+        <% if (safeReservasiList.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-state-icon">📅</div>
+          <div class="empty-state-title">Belum ada reservasi</div>
+          <p style="font-size:.85rem;">Tambahkan reservasi baru atau gunakan AI Assistant untuk pemesanan.</p>
+        </div>
+        <% } else { %>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="reservasiTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Pelanggan</th>
+                <th>Layanan</th>
+                <th>Tanggal</th>
+                <th>Jam</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="reservasiBody">
+              <% safeReservasiList.forEach(r => {
+                const statusVal = String(r.status || 'menunggu').toLowerCase();
+                const tanggalVal = r.tanggal instanceof Date
+                  ? `${r.tanggal.getFullYear()}-${String(r.tanggal.getMonth() + 1).padStart(2, '0')}-${String(r.tanggal.getDate()).padStart(2, '0')}`
+                  : String(r.tanggal || '').slice(0, 10);
+                const tanggalDate = tanggalVal ? new Date(`${tanggalVal}T00:00:00`) : null;
+                const tanggalValid = tanggalDate && !Number.isNaN(tanggalDate.getTime());
+              %>
+              <tr data-id="<%= r.id %>" data-tanggal="<%= tanggalValid ? tanggalVal : '' %>">
+                <td style="font-weight:600; color:var(--clr-text-muted);">#<%= r.id %></td>
+                <td style="font-weight:600;"><%= r.nama_pelanggan %></td>
+                <td><%= r.layanan || '—' %></td>
+                <td>
+                  <%= tanggalValid ? tanggalDate.toLocaleDateString('id-ID', { weekday:'short', day:'2-digit', month:'short', year:'numeric' }) : '—' %>
+                </td>
+                <td><%= r.jam ? String(r.jam).slice(0,5) : '—' %></td>
+                <td>
+                  <% const sc = statusVal === 'terkonfirmasi' ? 'success' : statusVal === 'dibatalkan' ? 'error' : 'warning' %>
+                  <span class="badge badge--<%= sc %>" id="status-<%= r.id %>">
+                    <%= statusVal === 'terkonfirmasi' ? '✅' : statusVal === 'dibatalkan' ? '❌' : '⏳' %>
+                    <%= statusVal.charAt(0).toUpperCase() + statusVal.slice(1) %>
+                  </span>
+                </td>
+                <td>
+                  <div style="display:flex; gap:.4rem; flex-wrap:wrap;">
+                    <% if (statusVal !== 'terkonfirmasi') { %>
+                    <button type="button" class="btn-primary btn-sm btn-ubah-status" data-id="<%= r.id %>" data-status="terkonfirmasi">✅</button>
+                    <% } %>
+                    <% if (statusVal !== 'dibatalkan') { %>
+                    <button type="button" class="btn-ghost btn-sm btn-ubah-status" style="color:var(--clr-error);" data-id="<%= r.id %>" data-status="dibatalkan">❌</button>
+                    <% } %>
+                    <% if (statusVal !== 'menunggu') { %>
+                    <button type="button" class="btn-ghost btn-sm btn-ubah-status" data-id="<%= r.id %>" data-status="menunggu">↩️</button>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal Tambah Reservasi -->
+  <div id="modalReservasi" style="display:none;">
+    <div class="modal-overlay" onclick="tutupModal(event)">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">📅 Tambah Reservasi</h2>
+          <button class="modal-close" onclick="tutupModal()">✕</button>
+        </div>
+        <form id="formReservasi">
+          <div class="form-group">
+            <label class="form-label" for="r-nama">Nama Pelanggan <span style="color:var(--clr-error)">*</span></label>
+            <input class="form-input" type="text" id="r-nama" required maxlength="150" placeholder="Masukkan nama pelanggan">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="r-layanan">Layanan</label>
+            <input class="form-input" type="text" id="r-layanan" maxlength="150" placeholder="Contoh: Makan Siang, Katering, dll">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="r-tanggal">Tanggal <span style="color:var(--clr-error)">*</span></label>
+              <input class="form-input" type="date" id="r-tanggal" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="r-jam">Jam <span style="color:var(--clr-error)">*</span></label>
+              <input class="form-input" type="time" id="r-jam" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="r-catatan">Catatan</label>
+            <textarea class="form-textarea" id="r-catatan" rows="2" placeholder="Tambahkan catatan (opsional)"></textarea>
+          </div>
+          <div id="modalAlert"></div>
+          <button type="submit" class="btn-primary btn-block" id="btnSubmitReservasi">Simpan Reservasi</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    // ============================================================
+    // Modal
+    // ============================================================
+    function bukaModal() {
+      document.getElementById('modalReservasi').style.display = 'flex';
+      document.getElementById('r-tanggal').min = new Date().toISOString().split('T')[0];
+    }
+    function tutupModal(e) {
+      if (!e || e.target === document.querySelector('.modal-overlay')) {
+        document.getElementById('modalReservasi').style.display = 'none';
+        document.getElementById('formReservasi').reset();
+        document.getElementById('modalAlert').innerHTML = '';
+      }
+    }
+    document.getElementById('btnTambahReservasi').onclick = bukaModal;
+
+    // ============================================================
+    // Tambah Reservasi (POST /api/reservasi)
+    // ============================================================
+    document.getElementById('formReservasi').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitReservasi');
+      btn.disabled = true;
+      btn.textContent = '⏳ Menyimpan…';
+      document.getElementById('modalAlert').innerHTML = '';
+
+      const body = {
+        nama_pelanggan: document.getElementById('r-nama').value,
+        layanan:        document.getElementById('r-layanan').value,
+        tanggal:        document.getElementById('r-tanggal').value,
+        jam:            document.getElementById('r-jam').value,
+        catatan:        document.getElementById('r-catatan').value,
+      };
+
+      try {
+        const res  = await fetch('/api/reservasi', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('modalReservasi').style.display = 'none';
+          document.getElementById('alertContainer').innerHTML = `<div class="alert alert--success">✅ Reservasi berhasil ditambahkan. Muat ulang halaman untuk melihat daftar terbaru.</div>`;
+          setTimeout(() => location.reload(), 1800);
+        } else {
+          document.getElementById('modalAlert').innerHTML = `<div class="alert alert--error">❌ ${data.message}</div>`;
+        }
+      } catch {
+        document.getElementById('modalAlert').innerHTML = `<div class="alert alert--error">❌ Gagal terhubung ke server.</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Simpan Reservasi';
+      }
+    });
+
+    // ============================================================
+    // Update Status (PATCH /api/reservasi/:id/status)
+    // ============================================================
+    async function ubahStatus(id, status) {
+      try {
+        const res  = await fetch(`/api/reservasi/${id}/status`, { method:'PATCH', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ status }) });
+        const data = await res.json();
+        if (data.success) {
+          const badge = document.getElementById(`status-${id}`);
+          if (badge) {
+            const icon  = status==='terkonfirmasi' ? '✅' : status==='dibatalkan' ? '❌' : '⏳';
+            const cls   = status==='terkonfirmasi' ? 'success' : status==='dibatalkan' ? 'error' : 'warning';
+            badge.className = `badge badge--${cls}`;
+            badge.textContent = `${icon} ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+            setTimeout(() => location.reload(), 600);
+          }
+        } else {
+          alert('Gagal: ' + data.message);
+        }
+      } catch { alert('Gagal terhubung ke server.'); }
+    }
+
+    document.addEventListener('click', event => {
+      const button = event.target.closest('.btn-ubah-status');
+      if (button) ubahStatus(button.dataset.id, button.dataset.status);
+    });
+
+    // ============================================================
+    // Filter tanggal (client-side)
+    // ============================================================
+    document.getElementById('filterDate').addEventListener('change', function() {
+      const val = this.value;
+      const rows = document.querySelectorAll('#reservasiBody tr');
+      let count = 0;
+      rows.forEach(r => {
+        const tgl = r.dataset.tanggal ? r.dataset.tanggal.slice(0,10) : '';
+        const show = !val || tgl === val;
+        r.style.display = show ? '' : 'none';
+        if (show) count++;
+      });
+      document.getElementById('totalCount').textContent = count;
+    });
+
+    document.getElementById('btnResetFilter').addEventListener('click', () => {
+      document.getElementById('filterDate').value = '';
+      document.querySelectorAll('#reservasiBody tr').forEach(r => r.style.display = '');
+      document.getElementById('totalCount').textContent = document.querySelectorAll('#reservasiBody tr').length;
+    });
+  </script>
+</body>
+</html>

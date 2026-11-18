@@ -1,33 +1,140 @@
+<% const safeUsaha = typeof usaha !== 'undefined' && usaha ? usaha : null; %>
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= appName %> | Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta name="description" content="SahabatUMKM — Platform AI Assistant untuk pelaku UMKM Indonesia">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="/css/style.css" rel="stylesheet">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark topbar"><div class="container">
-  <a class="navbar-brand fw-bold" href="/">SahabatUMKM</a>
-  <span class="navbar-text text-white-50 small">Project PPAW · Week 7</span>
-</div></nav>
-<main class="container py-4 py-lg-5">
-  <section class="hero p-4 p-lg-5 mb-4">
-    <span class="eyebrow">DASHBOARD USAHA</span>
-    <div class="row align-items-center g-4 mt-1">
-      <div class="col-lg-8"><h1 class="display-5 fw-bold">Kelola informasi usaha dengan lebih teratur.</h1>
-        <p class="lead mt-3 mb-0">SahabatUMKM adalah fondasi aplikasi pendamping pelaku usaha. Pada tahap ini, halaman menampilkan data produk yang dikirim oleh backend Express.</p></div>
-      <div class="col-lg-4"><div class="status-card"><div class="small text-secondary">STATUS APLIKASI</div><div class="d-flex align-items-center gap-2 mt-2"><span class="status-dot"></span><strong>Server aktif</strong></div><a href="/api/status" class="small mt-3 d-inline-block">Lihat response API status →</a></div></div>
+  <%- include('partials/navbar') %>
+
+  <main class="main-content">
+    <div class="container">
+
+      <% if (message) { %>
+      <div class="alert alert--<%= messageType === 'success' ? 'success' : 'error' %>">
+        <span><%= messageType === 'success' ? '✅' : '❌' %></span>
+        <span><%= message %></span>
+      </div>
+      <% } %>
+
+      <section class="hero-section">
+        <div style="display:grid; grid-template-columns:1fr 260px; gap:2rem; align-items:center;">
+          <div>
+            <div class="hero-eyebrow">Dashboard Usaha</div>
+            <h1 class="hero-title"><%= safeUsaha ? safeUsaha.nama : 'SahabatUMKM' %></h1>
+            <p class="hero-desc">
+              <% if (safeUsaha && safeUsaha.deskripsi) { %>
+                <%= safeUsaha.deskripsi %>
+              <% } else if (safeUsaha) { %>
+                Selamat datang di dashboard <strong><%= safeUsaha.nama %></strong>. Kelola usaha dan AI Assistant Anda dari sini.
+              <% } else { %>
+                Selamat datang! Lengkapi data usaha di <a href="/pengaturan" style="color:var(--clr-primary-mid); font-weight:600;">Pengaturan</a> untuk mengaktifkan AI Assistant.
+              <% } %>
+            </p>
+            <div class="hero-actions">
+              <a href="/chat" class="hero-btn">💬 Buka AI Assistant</a>
+              <a href="/pengaturan" class="hero-btn-ghost">⚙️ Pengaturan</a>
+            </div>
+          </div>
+          <div class="hero-status-card">
+            <div style="font-size:.68rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:rgba(255,255,255,.35); margin-bottom:1rem;">STATUS SISTEM</div>
+            <div class="status-row"><span class="status-dot" style="background:var(--clr-success);"></span> Server aktif</div>
+            <div class="status-row"><span class="status-dot" style="background:var(--clr-success);"></span> Database terhubung</div>
+            <div class="status-row">
+              <% if (safeUsaha) { %>
+              <span class="status-dot" style="background:var(--clr-success);"></span>
+              AI Assistant terkonfigurasi
+              <% } else { %>
+              <span class="status-dot" style="background:var(--clr-warning);"></span>
+              AI Assistant perlu dikonfigurasi
+              <% } %>
+            </div>
+            <a href="/api/status" class="btn-ghost btn-sm" style="margin-top:1rem; color:rgba(255,255,255,.35); font-size:.72rem; padding:.3rem .6rem;">
+              Lihat API Status →
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <% const safeProduk = Array.isArray(produk) ? produk : []; %>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🛍️</div>
+          <div class="stat-label">Total Produk</div>
+          <div class="stat-value"><%= safeProduk.length %></div>
+          <div class="stat-subtext">Produk terdaftar di katalog</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🤖</div>
+          <div class="stat-label">Model AI</div>
+          <div class="stat-value" style="font-size:1rem; color:var(--clr-primary);">Gemini AI</div>
+          <div class="stat-subtext">Powered by Google</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-label">Reservasi</div>
+          <div class="stat-value" style="font-size:1rem;">
+            <a href="/reservasi" style="color:var(--clr-primary); text-decoration:none; font-weight:800;">Kelola →</a>
+          </div>
+          <div class="stat-subtext">Lihat semua pemesanan</div>
+        </div>
+      </div>
+
+      <section>
+        <div class="section-header">
+          <div>
+            <div class="section-eyebrow">Katalog Produk</div>
+            <h2 class="section-title">Menu & Produk UMKM</h2>
+          </div>
+          <a href="/api/produk" class="btn-outline btn-sm" target="_blank">Lihat API →</a>
+        </div>
+
+        <% if (safeProduk.length === 0) { %>
+        <div class="empty-state" style="background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:var(--radius-2xl);">
+          <div class="empty-state-icon">🛍️</div>
+          <div class="empty-state-title">Belum ada produk</div>
+          <p style="font-size:.85rem;">Tambahkan produk via <code>POST /api/produk</code> untuk mengisi katalog.</p>
+        </div>
+        <% } else { %>
+        <div class="product-grid">
+          <% safeProduk.forEach((item, index) => { %>
+          <article class="product-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;">
+              <span class="product-index">PRODUK <%= String(index + 1).padStart(2, '0') %></span>
+              <span class="category-badge"><%= item.kategori || 'Umum' %></span>
+            </div>
+            <h3 class="product-name"><%= item.nama %></h3>
+            <p class="product-desc"><%= item.deskripsi || 'Tidak ada deskripsi.' %></p>
+            <div class="product-footer">
+              <span class="product-price">
+                <%= typeof formatRupiah === 'function' ? formatRupiah(item.harga) : ('Rp ' + Number(item.harga || 0).toLocaleString('id-ID')) %>
+              </span>
+              <span class="stok-badge">📦 <%= item.stok || 0 %></span>
+            </div>
+          </article>
+          <% }) %>
+        </div>
+        <% } %>
+      </section>
+
+      <section style="margin-top:2rem; background:linear-gradient(135deg,var(--clr-primary),#34d399); border-radius:var(--radius-2xl); padding:2.5rem 3rem; text-align:center; color:white;">
+        <div style="font-size:2.5rem; margin-bottom:.75rem;">💬</div>
+        <h2 style="font-size:1.5rem; font-weight:800; letter-spacing:-.02em; margin-bottom:.5rem;">Coba AI Assistant Sekarang</h2>
+        <p style="color:rgba(255,255,255,.8); margin-bottom:1.5rem; font-size:.95rem;">Tanya menu, harga, reservasi — bot siap membantu pelanggan Anda 24/7.</p>
+        <a href="/chat" class="hero-btn" style="background:white; color:var(--clr-primary); display:inline-flex;">
+          Mulai Percakapan →
+        </a>
+      </section>
+
     </div>
-  </section>
-  <section class="row g-3 mb-5">
-    <div class="col-md-4"><div class="stat-card"><div class="stat-label">TOTAL CONTOH PRODUK</div><div class="stat-number"><%= produk.length %></div><div class="text-secondary small">Data berasal dari Model</div></div></div>
-    <div class="col-md-4"><div class="stat-card"><div class="stat-label">BACKEND</div><div class="stat-number">Express.js</div><div class="text-secondary small">Mengelola request dan response</div></div></div>
-    <div class="col-md-4"><div class="stat-card"><div class="stat-label">VIEW ENGINE</div><div class="stat-number">EJS</div><div class="text-secondary small">Merender halaman dari backend</div></div></div>
-  </section>
-  <section class="mb-5"><div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3"><div><span class="eyebrow">KATALOG CONTOH</span><h2 class="h3 fw-bold mb-0 mt-1">Produk UMKM</h2></div><a href="/api/produk" class="btn btn-outline-success btn-sm">Buka API produk</a></div>
-    <div class="row g-3"><% produk.forEach((item, index) => { %><div class="col-md-4"><article class="product-card h-100"><div class="d-flex justify-content-between"><span class="product-index">PRODUK 0<%= index + 1 %></span><span class="badge rounded-pill category"><%= item.kategori %></span></div><h3 class="h5 fw-bold mt-4"><%= item.nama %></h3><p class="text-secondary small"><%= item.deskripsi %></p><div class="price mt-3"><%= formatRupiah(item.harga) %></div></article></div><% }) %></div>
-  </section>
-  <footer class="text-center text-secondary small py-4">SahabatUMKM · Express.js · EJS · Bootstrap</footer>
-</main>
-</body></html>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

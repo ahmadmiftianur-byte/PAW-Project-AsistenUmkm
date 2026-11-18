@@ -19,6 +19,11 @@ app.use('/', require('./routes/homeRoutes'));
 app.use('/api/status', require('./routes/statusRoutes'));
 app.use('/api/produk', require('./routes/produkRoutes'));
 
+// Routes baru — AI Chatbot, Pengaturan Usaha, Reservasi
+app.use('/', require('./routes/chat.routes'));
+app.use('/', require('./routes/usaha.routes'));
+app.use('/', require('./routes/reservasi.routes'));
+
 app.use(notFound);
 app.use(errorHandler);
 

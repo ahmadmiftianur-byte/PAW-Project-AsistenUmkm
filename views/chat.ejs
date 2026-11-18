@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= appName %> | AI Assistant</title>
+  <meta name="description" content="Tanya apapun tentang usaha kami kepada AI Assistant">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <main style="padding:1.5rem 0;">
+    <div class="container">
+      <div class="chat-layout">
+
+        <!-- Sidebar Info Usaha -->
+        <aside class="chat-sidebar">
+          <div class="sidebar-section-title">Info Usaha</div>
+          <div id="sidebarContent">
+            <div class="sidebar-info-item">
+              <span class="sidebar-info-icon">🏪</span>
+              <div>
+                <div class="sidebar-info-label">Nama Usaha</div>
+                <div class="sidebar-info-value" id="sUsahaName"><%= usahaName %></div>
+              </div>
+            </div>
+            <div class="sidebar-info-item">
+              <span class="sidebar-info-icon">🕐</span>
+              <div>
+                <div class="sidebar-info-label">Jam Buka</div>
+                <div class="sidebar-info-value" id="sUsahaJam">Memuat…</div>
+              </div>
+            </div>
+            <div class="sidebar-info-item">
+              <span class="sidebar-info-icon">📍</span>
+              <div>
+                <div class="sidebar-info-label">Lokasi</div>
+                <div class="sidebar-info-value" id="sUsahaLokasi">Memuat…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-divider"></div>
+
+          <div class="sidebar-section-title">Pertanyaan Cepat</div>
+          <button class="quick-chip" data-msg="Apa saja menu yang tersedia?">🍽️ Lihat menu</button>
+          <button class="quick-chip" data-msg="Berapa jam operasional usaha ini?">🕐 Jam buka</button>
+          <button class="quick-chip" data-msg="Di mana lokasi usaha ini?">📍 Lokasi</button>
+          <button class="quick-chip" data-msg="Saya ingin membuat reservasi">📅 Buat reservasi</button>
+          <button class="quick-chip" data-msg="Buatkan deskripsi produk untuk Kopi Susu Gula Aren">✍️ Deskripsi produk</button>
+          <button class="quick-chip" data-msg="Berikan 3 ide konten Instagram untuk produk kami">📱 Ide konten</button>
+
+          <div class="chat-divider"></div>
+
+          <a href="/reservasi" class="btn-outline btn-sm btn-block" style="text-align:center;">📅 Lihat Reservasi</a>
+        </aside>
+
+        <!-- Chat Utama -->
+        <div class="chat-main">
+          <div class="chat-header">
+            <div class="chat-header-avatar">🤖</div>
+            <div style="flex:1;">
+              <div class="chat-header-name">Asisten AI — <%= usahaName %></div>
+              <div class="chat-header-status">Online • Siap membantu</div>
+            </div>
+            <a href="/" class="btn-ghost btn-sm">← Dashboard</a>
+          </div>
+
+          <div class="chat-messages" id="chatMessages"></div>
+
+          <div class="chat-input-area">
+            <form class="chat-input-form" id="chatForm" autocomplete="off">
+              <textarea
+                class="chat-input"
+                id="chatInput"
+                placeholder="Ketik pertanyaan Anda…"
+                rows="1"
+                maxlength="500"
+              ></textarea>
+              <button type="submit" class="chat-send-btn" id="sendBtn" title="Kirim pesan">✉️</button>
+            </form>
+            <div class="chat-hint">Enter untuk kirim · Shift+Enter untuk baris baru · Maks. 500 karakter</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ============================================================
+    // State & Elements
+    // ============================================================
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput    = document.getElementById('chatInput');
+    const sendBtn      = document.getElementById('sendBtn');
+    const chatForm     = document.getElementById('chatForm');
+    const usahaName    = document.getElementById('sUsahaName').textContent;
+
+    // ============================================================
+    // Helpers
+    // ============================================================
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    function formatBotText(text) {
+      return escapeHtml(text)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:.1em .3em;border-radius:4px;font-size:.85em;">$1</code>')
+        .replace(/\n/g, '<br>');
+    }
+
+    function getTime() {
+      return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function scrollBottom() {
+      chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+    }
+
+    // ============================================================
+    // Message Renderers
+    // ============================================================
+    function addBotMessage(text, isError = false) {
+      const div = document.createElement('div');
+      div.className = 'message message--bot' + (isError ? ' message--error' : '');
+      div.innerHTML = `
+        <div class="message__avatar">🤖</div>
+        <div class="message__content">
+          <div class="message__bubble">${isError ? escapeHtml(text) : formatBotText(text)}</div>
+          <div class="message__time">${getTime()}</div>
+        </div>`;
+      chatMessages.appendChild(div);
+      scrollBottom();
+    }
+
+    function addUserMessage(text) {
+      const div = document.createElement('div');
+      div.className = 'message message--user';
+      div.innerHTML = `
+        <div class="message__content">
+          <div class="message__bubble">${escapeHtml(text)}</div>
+          <div class="message__time">${getTime()}</div>
+        </div>`;
+      chatMessages.appendChild(div);
+      scrollBottom();
+    }
+
+    function showTyping() {
+      const div = document.createElement('div');
+      div.className = 'message message--bot';
+      div.id = 'typingIndicator';
+      div.innerHTML = `
+        <div class="message__avatar">🤖</div>
+        <div class="message__content">
+          <div class="message__bubble typing-indicator"><span></span><span></span><span></span></div>
+        </div>`;
+      chatMessages.appendChild(div);
+      scrollBottom();
+    }
+
+    function removeTyping() {
+      const el = document.getElementById('typingIndicator');
+      if (el) el.remove();
+    }
+
+    // ============================================================
+    // Send Message (Fetch API → POST /api/chat)
+    // ============================================================
+    async function sendMessage(text) {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      sendBtn.disabled = true;
+
+      addUserMessage(trimmed);
+      showTyping();
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: trimmed }),
+        });
+
+        const data = await res.json();
+        removeTyping();
+
+        if (data.success && data.data?.reply) {
+          addBotMessage(data.data.reply);
+        } else {
+          addBotMessage(data.message || 'Maaf, terjadi kesalahan. Silakan coba lagi.', true);
+        }
+      } catch {
+        removeTyping();
+        addBotMessage('❌ Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', true);
+      } finally {
+        sendBtn.disabled = false;
+        chatInput.focus();
+      }
+    }
+
+    // ============================================================
+    // Event Listeners
+    // ============================================================
+    chatForm.addEventListener('submit', e => { e.preventDefault(); sendMessage(chatInput.value); });
+
+    chatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(chatInput.value); }
+    });
+
+    chatInput.addEventListener('input', () => {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+    });
+
+    document.querySelectorAll('.quick-chip').forEach(chip => {
+      chip.addEventListener('click', () => sendMessage(chip.dataset.msg));
+    });
+
+    // ============================================================
+    // Load Usaha Info for Sidebar (AJAX)
+    // ============================================================
+    async function loadSidebarInfo() {
+      try {
+        const res  = await fetch('/api/usaha');
+        const data = await res.json();
+        if (data.success && data.data) {
+          const u = data.data;
+          document.getElementById('sUsahaName').textContent   = u.nama    || '-';
+          document.getElementById('sUsahaJam').textContent    = u.jam_buka || 'Tidak tersedia';
+          document.getElementById('sUsahaLokasi').textContent = u.lokasi  || 'Tidak tersedia';
+        }
+      } catch { /* sidebar info tidak kritis */ }
+    }
+
+    // ============================================================
+    // Init — Greeting otomatis
+    // ============================================================
+    addBotMessage(
+      `Halo! 👋 Saya asisten virtual AI untuk **${usahaName}**.\n\nSilakan tanyakan tentang **menu, harga, jam buka, reservasi**, atau minta saya **membuat deskripsi produk** dan **ide konten media sosial**. Saya siap membantu! 😊`
+    );
+
+    loadSidebarInfo();
+    chatInput.focus();
+  </script>
+</body>
+</html>

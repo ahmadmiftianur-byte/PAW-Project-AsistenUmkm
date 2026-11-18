@@ -1,0 +1,25 @@
+<%
+const _page = (typeof activePage !== 'undefined') ? activePage : '';
+%>
+<nav class="main-navbar">
+  <div class="container">
+    <a href="/" class="navbar-brand">
+      <span class="brand-dot"></span>
+      SahabatUMKM
+    </a>
+    <div class="navbar-links">
+      <a href="/" class="nav-link <%= _page === 'home' ? 'active' : '' %>">
+        <span>📊</span><span>Dashboard</span>
+      </a>
+      <a href="/chat" class="nav-link <%= _page === 'chat' ? 'active' : 'chat-nav-btn' %>">
+        <span>💬</span><span>AI Assistant</span>
+      </a>
+      <a href="/reservasi" class="nav-link <%= _page === 'reservasi' ? 'active' : '' %>">
+        <span>📅</span><span>Reservasi</span>
+      </a>
+      <a href="/pengaturan" class="nav-link <%= _page === 'pengaturan' ? 'active' : '' %>">
+        <span>⚙️</span><span>Pengaturan</span>
+      </a>
+    </div>
+  </div>
+</nav>

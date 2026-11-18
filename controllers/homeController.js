@@ -1,11 +1,18 @@
 const produkModel = require('../models/produkModel');
+const UsahaModel = require('../models/usaha.model');
 const formatRupiah = require('../utils/formatRupiah');
 
 async function tampilkanHome(req, res) {
-  const produk = await produkModel.getAll();
+  const [produk, usaha] = await Promise.all([
+    produkModel.getAll(),
+    UsahaModel.getUsaha(),
+  ]);
+
   res.render('index', {
     appName: 'SahabatUMKM',
+    activePage: 'home',
     produk,
+    usaha,
     formatRupiah,
     message: req.query.message || '',
     messageType: req.query.type || 'success',
@@ -13,3 +20,4 @@ async function tampilkanHome(req, res) {
 }
 
 module.exports = { tampilkanHome };
+
